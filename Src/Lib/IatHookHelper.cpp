@@ -78,6 +78,10 @@ IatHookData *SetIatHook( IMAGE_DOS_HEADER *dosHeader, DWORD iatOffset, DWORD int
 #else
 		hook->jumpOffs=(DWORD)(hook)+8;
 #endif
+#elif defined(_M_ARM)
+		// hook->jump[0] = 0x04; hook->jump[1] = 0xF0; hook->jump[2] = 0x1F; hook->jump[3] = 0xE5; // ARM mode - LDR PC, [PC, #-4]
+		hook->jump[0] = 0x00; hook->jump[1] = 0xF8; hook->jump[2] = 0xDF; hook->jump[3] = 0xF8; // Thumb mode - LDR.W PC, [PC]
+		*(void**)(hook->jump + 4) = newProc;
 #elif defined(_M_ARM64)
 		hook->jump[0]=0x48; hook->jump[1]=0x00; hook->jump[2]=0x00; hook->jump[3]=0x58; // LDR X8, newProc
 		hook->jump[4]=0x00; hook->jump[5]=0x01; hook->jump[6]=0x1F; hook->jump[7]=0xD6; // BR X8
@@ -87,7 +91,11 @@ IatHookData *SetIatHook( IMAGE_DOS_HEADER *dosHeader, DWORD iatOffset, DWORD int
 		hook->thunk=thunk;
 		DWORD oldProtect;
 		VirtualProtect(&thunk->u1.Function,sizeof(void*),PAGE_READWRITE,&oldProtect);
-		thunk->u1.Function=(DWORD_PTR)hook;
+#if defined(_M_ARM)
+		thunk->u1.Function = ((DWORD_PTR)hook) | 1; // set Thumb bit for ARM32
+#else
+		thunk->u1.Function = (DWORD_PTR)hook;       // x86, x64, ARM64
+#endif
 		VirtualProtect(&thunk->u1.Function,sizeof(void*),oldProtect,&oldProtect);
 		return hook;
 	}

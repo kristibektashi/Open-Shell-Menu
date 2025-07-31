@@ -56,6 +56,16 @@ candle Setup.wxs -nologo -out Temp\Setup64.wixobj -ext WixUIExtension -ext WixUt
 light Temp\Setup64.wixobj -nologo -out Temp\Setup64.msi -ext WixUIExtension -ext WixUtilExtension -loc ..\Localization\%CS_LANG_FOLDER%\OpenShellText-%CS_LANG_NAME%.wxl -loc ..\Localization\%CS_LANG_FOLDER%\WixUI_%CS_LANG_NAME%.wxl -sice:ICE38 -sice:ICE43 -sice:ICE09
 @if ERRORLEVEL 1 exit /b 1
 
+REM ********* Build ARM32 MSI
+echo --- ARM32 MSI
+candle Setup.wxs -nologo -out Temp\SetupARM.wixobj -ext WixUIExtension -ext WixUtilExtension -dx64=0 -dARM64=0 -dARM=1 -dCS_LANG_FOLDER=%CS_LANG_FOLDER% -dCS_LANG_NAME=%CS_LANG_NAME%
+@if ERRORLEVEL 1 exit /b 1
+
+@REM We need to suppress ICE38 and ICE43 because they apply only to per-user installation. We only support per-machine installs
+@REM We need to suppress ICE09 because the helper DLLs need to go into the system directory (for safety reasons)
+light Temp\SetupARM.wixobj -nologo -out Temp\SetupARM.msi -ext WixUIExtension -ext WixUtilExtension -loc ..\Localization\%CS_LANG_FOLDER%\OpenShellText-%CS_LANG_NAME%.wxl -loc ..\Localization\%CS_LANG_FOLDER%\WixUI_%CS_LANG_NAME%.wxl -sice:ICE38 -sice:ICE43 -sice:ICE09
+@if ERRORLEVEL 1 exit /b 1
+
 REM ********* Build ARM64 MSI
 echo --- ARM64 MSI
 candle Setup.wxs -nologo -out Temp\SetupARM64.wixobj -ext WixUIExtension -ext WixUtilExtension -dx64=0 -dARM64=1 -dCS_LANG_FOLDER=%CS_LANG_FOLDER% -dCS_LANG_NAME=%CS_LANG_NAME%

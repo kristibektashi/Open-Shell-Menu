@@ -9,8 +9,8 @@ struct IatHookData
 #if defined(_M_AMD64) || defined(_M_IX86)
 	unsigned char jump[4]; // jump instruction 0x90, 0x90, 0xFF, 0x25
 	DWORD jumpOffs; // jump instruction offset
-#elif defined(_M_ARM64)
-	unsigned char jump[8]; // LDR <address>, BR
+#elif defined(_M_ARM64) || defined(_M_ARM)
+	unsigned char jump[8]; // LDR <address>, BR if on ARM64, LDR PC, [PC, #imm] if on ARM32
 #endif
 	void *newProc; // the address of the new proc
 	void *oldProc; // the address of the old proc

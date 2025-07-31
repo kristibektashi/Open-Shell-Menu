@@ -16,6 +16,10 @@
     <OutDir>$(MSBuildThisFileDirectory)..\build\bin\$(Configuration)64\</OutDir>
     <IntDir>$(MSBuildThisFileDirectory)..\build\obj\$(ProjectName)\$(Configuration)64\</IntDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM'">
+    <OutDir>$(MSBuildThisFileDirectory)..\build\bin\$(Configuration)ARM\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)..\build\obj\$(ProjectName)\$(Configuration)ARM\</IntDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)'=='ARM64'">
     <OutDir>$(MSBuildThisFileDirectory)..\build\bin\$(Configuration)ARM64\</OutDir>
     <IntDir>$(MSBuildThisFileDirectory)..\build\obj\$(ProjectName)\$(Configuration)ARM64\</IntDir>

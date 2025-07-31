@@ -1,6 +1,7 @@
 if exist Output rd /Q /S Output
 md Output
 md Output\x64
+md Output\ARM
 md Output\ARM64
 
 echo -- Compiling
@@ -18,6 +19,11 @@ echo --- x64
 REM ********* Build ARM64 solution
 echo --- ARM64
 "%MSBuildDir%MSBuild.exe" ..\OpenShell.sln /m /t:Rebuild /p:Configuration="Setup" /p:Platform="ARM64" /verbosity:quiet /nologo
+if ERRORLEVEL 1 exit /b 1
+
+REM ********* Build ARM32 solution
+echo --- ARM64
+"%MSBuildDir%MSBuild.exe" ..\OpenShell.sln /m /t:Rebuild /p:Configuration="Setup" /p:Platform="ARM" /verbosity:quiet /nologo
 if ERRORLEVEL 1 exit /b 1
 
 REM ********* Build 32-bit solution (must be after 64-bit)
@@ -50,6 +56,17 @@ copy /B ..\..\build\bin\Setup\StartMenuHelper32.dll Output > nul
 copy /B ..\..\build\bin\Release\Update.exe Output > nul
 copy /B ..\..\build\bin\Release\DesktopToasts.dll Output > nul
 copy /B ..\..\build\bin\Release\SetupHelper.exe Output > nul
+
+copy /B ..\..\build\bin\SetupARM\ClassicExplorer32.dll Output\ARM > nul
+copy /B ..\..\build\bin\SetupARM\ClassicExplorerSettings.exe Output\ARM > nul
+copy /B ..\..\build\bin\SetupARM\ClassicIEDLL_32.dll Output\ARM > nul
+copy /B ..\..\build\bin\SetupARM\ClassicIE_32.exe Output\ARM > nul
+copy /B ..\..\build\bin\SetupARM\StartMenu.exe Output\ARM > nul
+copy /B ..\..\build\bin\SetupARM\StartMenuDLL.dll Output\ARM > nul
+copy /B ..\..\build\bin\SetupARM\StartMenuHelper32.dll Output\ARM > nul
+copy /B ..\..\build\bin\ReleaseARM\Update.exe Output\ARM > nul
+copy /B ..\..\build\bin\ReleaseARM\DesktopToasts.dll Output\ARM > nul
+copy /B ..\..\build\bin\ReleaseARM\SetupHelper.exe Output\ARM > nul
 
 copy /B ..\..\build\bin\SetupARM64\ClassicExplorer64.dll Output\ARM64 > nul
 copy /B ..\..\build\bin\SetupARM64\ClassicIEDLL_64.dll Output\ARM64 > nul
@@ -86,6 +103,7 @@ copy /B "..\..\build\bin\Skins\Immersive.skin7" Output > nul
 REM ********* Collect debug info
 md Output\PDB32
 md Output\PDB64
+md Output\PDBARM
 md Output\PDBARM64
 
 REM Explorer 32
@@ -97,6 +115,12 @@ copy /B Output\ClassicExplorerSettings.exe Output\PDB32 > nul
 REM Explorer 64
 copy /B ..\..\build\bin\Setup64\ClassicExplorer64.pdb Output\PDB64 > nul
 copy /B Output\x64\ClassicExplorer64.dll Output\PDB64 > nul
+
+REM Explorer ARM32
+copy /B ..\..\build\bin\SetupARM\ClassicExplorer32.pdb Output\PDBARM > nul
+copy /B Output\ARM\ClassicExplorer32.dll Output\PDBARM > nul
+copy /B ..\..\build\bin\SetupARM\ClassicExplorerSettings.pdb Output\PDBARM > nul
+copy /B Output\ARM\ClassicExplorerSettings.exe Output\PDBARM > nul
 
 REM Explorer ARM64
 copy /B ..\..\build\bin\SetupARM64\ClassicExplorer64.pdb Output\PDBARM64 > nul
@@ -113,6 +137,12 @@ copy /B ..\..\build\bin\Setup64\ClassicIEDLL_64.pdb Output\PDB64 > nul
 copy /B Output\x64\ClassicIEDLL_64.dll Output\PDB64 > nul
 copy /B ..\..\build\bin\Setup64\ClassicIE_64.pdb Output\PDB64 > nul
 copy /B Output\x64\ClassicIE_64.exe Output\PDB64 > nul
+
+REM IE ARM32
+copy /B ..\..\build\bin\SetupARM\ClassicIEDLL_32.pdb Output\PDBARM > nul
+copy /B Output\ARM\ClassicIEDLL_32.dll Output\PDBARM > nul
+copy /B ..\..\build\bin\SetupARM\ClassicIE_32.pdb Output\PDBARM > nul
+copy /B Output\ARM\ClassicIE_32.exe Output\PDBARM > nul
 
 REM IE ARM64
 copy /B ..\..\build\bin\SetupARM64\ClassicIEDLL_64.pdb Output\PDBARM64 > nul
@@ -139,6 +169,18 @@ copy /B ..\..\build\bin\Setup64\StartMenuDLL.pdb Output\PDB64 > nul
 copy /B Output\x64\StartMenuDLL.dll Output\PDB64 > nul
 copy /B ..\..\build\bin\Setup64\StartMenuHelper64.pdb Output\PDB64 > nul
 copy /B Output\x64\StartMenuHelper64.dll Output\PDB64 > nul
+
+REM Menu ARM32
+copy /B ..\..\build\bin\SetupARM\StartMenu.pdb Output\PDBARM > nul
+copy /B Output\ARM\StartMenu.exe Output\PDBARM > nul
+copy /B ..\..\build\bin\SetupARM\StartMenuDLL.pdb Output\PDBARM > nul
+copy /B Output\ARM\StartMenuDLL.dll Output\PDBARM > nul
+copy /B ..\..\build\bin\SetupARM\StartMenuHelper32.pdb Output\PDBARM > nul
+copy /B Output\ARM\StartMenuHelper32.dll Output\PDBARM > nul
+copy /B ..\..\build\bin\ReleaseARM\Update.pdb Output\PDBARM > nul
+copy /B Output\ARM\Update.exe Output\PDBARM > nul
+copy /B ..\..\build\bin\ReleaseARM\DesktopToasts.pdb Output\PDBARM > nul
+copy /B Output\ARM\DesktopToasts.dll Output\PDBARM > nul
 
 REM Menu ARM64
 copy /B ..\..\build\bin\SetupARM64\StartMenu.pdb Output\PDBARM64 > nul
@@ -172,6 +214,14 @@ if exist %PDBSTR_PATH% (
 		)
 	)
 
+	for %%f in (Output\PDBARM\*.pdb) do (
+		%PDBSTR_PATH% -w -p:%%f -s:srcsrv -i:Output\pdbstr.txt
+		if not ERRORLEVEL 0 (
+			echo Error adding source index to PDB
+			exit /b 1
+		)
+	)
+
 	for %%f in (Output\PDBARM64\*.pdb) do (
 		%PDBSTR_PATH% -w -p:%%f -s:srcsrv -i:Output\pdbstr.txt
 		if not ERRORLEVEL 0 (
@@ -187,12 +237,14 @@ set SYMSTORE_PATH="C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\symstore
 
 %SYMSTORE_PATH% add /r /f Output\PDB32 /s Output\symbols /t OpenShell -:NOREFS > nul
 %SYMSTORE_PATH% add /r /f Output\PDB64 /s Output\symbols /t OpenShell -:NOREFS > nul
+%SYMSTORE_PATH% add /r /f Output\PDBARM /s Output\symbols /t OpenShell -:NOREFS > nul
 %SYMSTORE_PATH% add /r /f Output\PDBARM64 /s Output\symbols /t OpenShell -:NOREFS > nul
 rd /Q /S Output\symbols\000Admin > nul
 del Output\symbols\pingme.txt > nul
 
 rd /Q /S Output\PDB32
 rd /Q /S Output\PDB64
+rd /Q /S Output\PDBARM
 rd /Q /S Output\PDBARM64
 
 REM ********* Build ADMX
